@@ -6,10 +6,15 @@
   "type": "module",
   "scripts": {
     "remind": "node scripts/remind.js",
-    "test": "node scripts/remind.js"
+    "remind:enhanced": "node scripts/remind-enhanced.js",
+    "test": "node scripts/remind-enhanced.js",
+    "test:basic": "node scripts/remind.js"
   },
   "dependencies": {
-    "@slack/web-api": "^7.0.0"
+    "@slack/web-api": "^7.0.0",
+    "axios": "^1.11.0",
+    "date-holidays": "^3.25.0",
+    "node-cache": "^5.1.2"
   },
   "engines": {
     "node": ">=18.0.0"

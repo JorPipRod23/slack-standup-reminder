@@ -1,15 +1,20 @@
 # Slack Standup Reminder Bot
 
-A Slack bot that automatically reminds specific user group members to post their daily standup in a thread if they haven't responded by a certain time.
+A smart Slack bot that automatically reminds specific user group members to post their daily standup, with intelligent filtering based on holidays and leave status.
 
 ## 🚀 Features
 
 - **Works with Workflow Builder** - Detects standup messages posted by Slack Workflow Builder
 - **Smart reminders** - Only mentions users from a specific user group who haven't responded
+- **UK Holiday awareness** - Automatically skips UK bank holidays
+- **Timetastic integration** - Skips users on holiday, sick leave, or day off
+- **Email-based mapping** - Matches Slack users with Timetastic via email
+- **Detailed logging** - Shows who was skipped and why
 - **Flexible configuration** - All settings via environment variables
 - **Private channel support** - Works with both public and private channels
 - **Batch mentions** - Groups mentions in batches of 20 to avoid limits
-- **Keyword-based detection** - Finds standup messages using configurable keywords
+- **Rate limiting** - Respects API rate limits with built-in throttling
+- **Caching** - Reduces API calls with intelligent caching
 
 ## 📋 Requirements
 
@@ -98,8 +103,11 @@ REMINDER_TEXT=Please post your standup!    # Reminder message text
 ### Local Testing
 
 ```bash
-# Run reminder check
+# Basic version (without Timetastic/holidays)
 npm run remind
+
+# Enhanced version (with Timetastic and UK holidays)
+npm run remind:enhanced
 ```
 
 ### Deploy on Render.com (Recommended)
@@ -110,10 +118,10 @@ npm run remind
 
 #### Cron Job: Reminder at 13:00
 - **Name**: Standup Reminder
-- **Command**: `node scripts/remind.js`
-- **Schedule**: `0 13 * * 1-5` (13:00 Mon-Fri)
-- **Timezone**: Your timezone (e.g., Europe/Moscow)
-- **Environment Variables**: Add all from `.env`
+- **Command**: `node scripts/remind-enhanced.js` (for enhanced version with holidays/leave)
+- **Schedule**: `0 10 * * 1-5` (10:00 UTC = 13:00 MSK, Mon-Fri)
+- **Timezone**: UTC (or your timezone)
+- **Environment Variables**: Add all from `.env` including TIMETASTIC_API_KEY
 
 ### Alternative: GitHub Actions
 
@@ -174,6 +182,15 @@ Use User Token (xoxp-) with `usergroups:read` scope, not Bot Token.
 
 ### Message too long with mentions
 Script automatically splits mentions into batches of 20 users.
+
+### Timetastic not working
+- Check API key is correct
+- Ensure users have matching emails in Slack and Timetastic
+- Check Timetastic API status
+
+### UK holidays not detected
+- Bot uses both date-holidays library and UK Gov API
+- If both fail, bot continues (fail-open approach)
 
 ## 🔒 Security
 
