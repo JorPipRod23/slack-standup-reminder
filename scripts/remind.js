@@ -9,7 +9,7 @@ const channel = process.env.CHANNEL_ID;
 const userGroupId = process.env.USERGROUP_ID;
 // Keywords to identify standup messages from Workflow Builder
 const standupKeywords = (process.env.STANDUP_KEYWORDS || 'standup,стендап,daily').toLowerCase().split(',');
-const reminderText = process.env.REMINDER_TEXT || 'Напоминание: не забыли отписаться в стендапе до 13:00?';
+const reminderText = process.env.REMINDER_TEXT || 'Коллеги, напоминаю про стендап! Пожалуйста, отпишитесь в треде до 13:00 📝';
 
 /**
  * Check if a timestamp is from today
@@ -156,11 +156,16 @@ async function sendReminders(threadTs, usersToRemind) {
     const batch = usersToRemind.slice(i, i + batchSize);
     const mentions = batch.map(userId => `<@${userId}>`).join(' ');
     
+    // Format message with reminder text first, then mentions
+    const message = `${reminderText}\n\n${mentions}`;
+    
     try {
       await botClient.chat.postMessage({
         channel: channel,
         thread_ts: threadTs,
-        text: `${reminderText} ${mentions}`
+        text: message,
+        unfurl_links: false,
+        unfurl_media: false
       });
       
       console.log(`   Batch ${Math.floor(i / batchSize) + 1}: reminded ${batch.length} users`);
