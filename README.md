@@ -1,144 +1,134 @@
 # Slack Standup Reminder Bot
 
-Автоматический бот для Slack, который постит ежедневные стендапы и напоминает участникам определенной user group отписаться в треде.
+A Slack bot that automatically reminds specific user group members to post their daily standup in a thread if they haven't responded by a certain time.
 
-## 🚀 Возможности
+## 🚀 Features
 
-- **Автоматический пост стендапа** - каждое утро в указанное время
-- **Умные напоминания** - пингует только тех из user group, кто не ответил
-- **Гибкая настройка** - все параметры через переменные окружения
-- **Поддержка приватных каналов** - работает с публичными и приватными каналами
-- **Батчинг упоминаний** - группирует упоминания по 20 человек
+- **Works with Workflow Builder** - Detects standup messages posted by Slack Workflow Builder
+- **Smart reminders** - Only mentions users from a specific user group who haven't responded
+- **Flexible configuration** - All settings via environment variables
+- **Private channel support** - Works with both public and private channels
+- **Batch mentions** - Groups mentions in batches of 20 to avoid limits
+- **Keyword-based detection** - Finds standup messages using configurable keywords
 
-## 📋 Требования
+## 📋 Requirements
 
-- Node.js 18+ 
-- Slack Workspace с правами администратора
-- Slack App с необходимыми разрешениями
+- Node.js 18+
+- Slack Workspace with admin rights
+- Slack App with required permissions
+- Slack Workflow Builder posting daily standup messages
 
-## 🔧 Установка
+## 🔧 Installation
 
-### 1. Клонирование репозитория
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/slack-standup-reminder.git
+git clone https://github.com/JorPipRod23/slack-standup-reminder.git
 cd slack-standup-reminder
 npm install
 ```
 
-### 2. Создание Slack App
+### 2. Create Slack App
 
-1. Перейдите на https://api.slack.com/apps
-2. Нажмите **Create New App** → **From scratch**
-3. Введите название (например, "Standup Reminder") и выберите workspace
+1. Go to https://api.slack.com/apps
+2. Click **Create New App** → **From scratch**
+3. Name it (e.g., "Standup Reminder") and select your workspace
 
-### 3. Настройка разрешений (OAuth & Permissions)
+### 3. Configure Permissions (OAuth & Permissions)
 
 #### Bot Token Scopes:
-- `chat:write` - отправка сообщений
-- `conversations.history` - чтение истории канала
-- `conversations.replies` - чтение ответов в тредах
-- `channels:read` - чтение информации о публичных каналах
-- `groups:read` - чтение информации о приватных каналах
-- `users:read` - чтение информации о пользователях (опционально)
+- `chat:write` - Post messages
+- `conversations.history` - Read channel history
+- `conversations.replies` - Read thread replies
+- `channels:read` - Read public channel info
+- `groups:read` - Read private channel info (required for G... channels)
+- `users:read` - Read user information (optional)
 
-#### User Token Scopes (для работы с user groups):
-- `usergroups:read` - чтение состава user groups
-- `users:read` - чтение информации о пользователях
+#### User Token Scopes (for user groups):
+- `usergroups:read` - Read user group members
+- `users:read` - Read user information
 
-### 4. Установка приложения в workspace
+### 4. Install App to Workspace
 
-1. В разделе **OAuth & Permissions** нажмите **Install to Workspace**
-2. Разрешите запрошенные права
-3. Скопируйте **Bot User OAuth Token** (начинается с `xoxb-`)
-4. Скопируйте **User OAuth Token** (начинается с `xoxp-`)
+1. In **OAuth & Permissions** click **Install to Workspace**
+2. Authorize the permissions
+3. Copy **Bot User OAuth Token** (starts with `xoxb-`)
+4. Copy **User OAuth Token** (starts with `xoxp-`)
 
-### 5. Добавление бота в канал
+### 5. Add Bot to Channel
 
-В Slack канале выполните команду:
+In your Slack channel run:
 ```
 /invite @Standup Reminder
 ```
-(используйте имя вашего приложения)
+(use your app name)
 
-## ⚙️ Конфигурация
+## ⚙️ Configuration
 
-### Переменные окружения
+### Environment Variables
 
-Создайте файл `.env` на основе `.env.example`:
+Create `.env` file based on `.env.example`:
 
 ```bash
-# Обязательные переменные
+# Required
 SLACK_BOT_TOKEN=xoxb-your-bot-token        # Bot User OAuth Token
-SLACK_USER_TOKEN=xoxp-your-user-token      # User OAuth Token (для user groups)
-CHANNEL_ID=G011C5ETX4Z                     # ID канала (C... или G...)
-USERGROUP_ID=S09AZ861LFJ                   # ID user group
+SLACK_USER_TOKEN=xoxp-your-user-token      # User OAuth Token (for user groups)
+CHANNEL_ID=G011C5ETX4Z                     # Channel ID (C... or G...)
+USERGROUP_ID=S09AZ861LFJ                   # User Group ID
 
-# Опциональные переменные
-STANDUP_TEXT=[:mega:] [STANDUP] Ежедневный стендап...  # Текст стендап-сообщения
-STANDUP_MARKER=[STANDUP]                              # Маркер для поиска стендапа
-REMINDER_TEXT=Напоминание: не забыли отписаться?      # Текст напоминания
+# Optional
+STANDUP_KEYWORDS=standup,daily             # Keywords to identify standup messages
+REMINDER_TEXT=Please post your standup!    # Reminder message text
 ```
 
-### Как найти ID
+### Finding IDs
 
 #### Channel ID:
-1. Откройте канал в Slack
-2. Нажмите на название канала вверху
-3. Скопируйте Channel ID внизу попапа
+1. Open channel in Slack
+2. Click channel name at the top
+3. Copy Channel ID from the popup
 
 #### User Group ID:
-1. Откройте https://app.slack.com/client/YOUR_WORKSPACE/browse-user-groups
-2. Кликните на нужную группу
-3. ID будет в URL: `...usergroup/SXXXXXXXXX`
+1. Go to https://app.slack.com/client/YOUR_WORKSPACE/browse-user-groups
+2. Click on the group
+3. ID is in the URL: `...usergroup/SXXXXXXXXX`
 
-## 🚀 Запуск
+## 🚀 Usage
 
-### Локальный запуск для тестирования
+### Local Testing
 
 ```bash
-# Постинг стендапа
-npm run post-standup
-
-# Отправка напоминаний
+# Run reminder check
 npm run remind
 ```
 
-### Деплой на Render.com (рекомендуется)
+### Deploy on Render.com (Recommended)
 
-1. Создайте аккаунт на [Render.com](https://render.com)
-2. Подключите GitHub репозиторий
-3. Создайте два **Cron Job**:
+1. Create account on [Render.com](https://render.com)
+2. Connect GitHub repository
+3. Create **Cron Job**:
 
-#### Cron Job 1: Утренний стендап
-- **Name**: Standup Post
-- **Command**: `node scripts/post-standup.js`
-- **Schedule**: `0 10 * * 1-5` (10:00 пн-пт)
-- **Timezone**: Europe/Moscow (или ваша)
-
-#### Cron Job 2: Напоминание
+#### Cron Job: Reminder at 13:00
 - **Name**: Standup Reminder
 - **Command**: `node scripts/remind.js`
-- **Schedule**: `0 13 * * 1-5` (13:00 пн-пт)
-- **Timezone**: Europe/Moscow (или ваша)
+- **Schedule**: `0 13 * * 1-5` (13:00 Mon-Fri)
+- **Timezone**: Your timezone (e.g., Europe/Moscow)
+- **Environment Variables**: Add all from `.env`
 
-4. Добавьте переменные окружения в настройках каждого Cron Job
+### Alternative: GitHub Actions
 
-### Альтернативный деплой (GitHub Actions)
-
-Создайте `.github/workflows/standup.yml`:
+Create `.github/workflows/reminder.yml`:
 
 ```yaml
 name: Standup Reminder
 
 on:
   schedule:
-    - cron: '0 7 * * 1-5'  # 10:00 MSK (UTC+3)
     - cron: '0 10 * * 1-5' # 13:00 MSK (UTC+3)
   workflow_dispatch:
 
 jobs:
-  standup:
+  remind:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -146,67 +136,57 @@ jobs:
         with:
           node-version: '18'
       - run: npm ci
-      - name: Post or Remind
+      - name: Send Reminders
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_USER_TOKEN: ${{ secrets.SLACK_USER_TOKEN }}
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
           USERGROUP_ID: ${{ secrets.USERGROUP_ID }}
-        run: |
-          HOUR=$(date -u +%H)
-          if [ "$HOUR" = "07" ]; then
-            npm run post-standup
-          else
-            npm run remind
-          fi
+        run: npm run remind
 ```
 
-## 📊 Логика работы
-
-### post-standup.js
-1. Постит сообщение с маркером `[STANDUP]` в указанный канал
-2. Сообщение становится родительским для треда со стендапами
+## 📊 How It Works
 
 ### remind.js
-1. Ищет сегодняшнее сообщение с маркером `[STANDUP]`
-2. Получает список участников указанной user group
-3. Проверяет, кто уже ответил в треде
-4. Пингует в треде только тех из группы, кто не ответил
-5. Группирует упоминания по 20 человек для избежания лимитов
+1. Finds today's standup message from Workflow Builder (by keywords)
+2. Gets members of the specified user group
+3. Checks who already replied in the thread
+4. Mentions only group members who haven't replied
+5. Batches mentions (20 users per message) to avoid limits
 
-## 🐛 Решение проблем
+## 🐛 Troubleshooting
 
 ### "not_in_channel"
-Бот не добавлен в канал. Используйте `/invite @BotName` в канале.
+Bot is not in the channel. Use `/invite @BotName` in the channel.
 
 ### "channel_not_found" 
-- Проверьте правильность CHANNEL_ID
-- Для приватных каналов (G...) нужен scope `groups:read`
-- Убедитесь, что бот добавлен в канал
+- Check CHANNEL_ID is correct
+- For private channels (G...) you need `groups:read` scope
+- Make sure bot is added to the channel
 
-### "missing_scope" при работе с user groups
-Используйте User Token (xoxp-) с scope `usergroups:read` вместо Bot Token.
+### "missing_scope" with user groups
+Use User Token (xoxp-) with `usergroups:read` scope, not Bot Token.
 
-### Бот не находит стендап-сообщение
-- Проверьте, что в тексте есть маркер (по умолчанию `[STANDUP]`)
-- Увеличьте лимит поиска в `conversations.history`
-- Проверьте временную зону сервера
+### Bot doesn't find standup message
+- Check that message contains one of the keywords (default: "standup", "стендап", "daily")
+- Increase search limit in `conversations.history`
+- Check server timezone
 
-### Слишком длинное сообщение с упоминаниями
-Скрипт автоматически разбивает упоминания на батчи по 20 человек.
+### Message too long with mentions
+Script automatically splits mentions into batches of 20 users.
 
-## 🔒 Безопасность
+## 🔒 Security
 
-- **Никогда** не коммитьте токены в репозиторий
-- Используйте `.env` файл локально (он в `.gitignore`)
-- На продакшене используйте секреты платформы (Render, GitHub Secrets, etc.)
-- Регулярно ротируйте токены
-- Ограничивайте права приложения минимально необходимыми
+- **Never** commit tokens to repository
+- Use `.env` file locally (it's in `.gitignore`)
+- Use platform secrets in production (Render, GitHub Secrets, etc.)
+- Rotate tokens regularly
+- Limit app permissions to minimum required
 
-## 📝 Лицензия
+## 📝 License
 
 MIT
 
-## 🤝 Поддержка
+## 🤝 Support
 
-При возникновении проблем создайте Issue в репозитории.
+For issues, create an Issue in the repository.

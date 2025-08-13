@@ -7,7 +7,8 @@ const userClient = new WebClient(process.env.SLACK_USER_TOKEN); // User token fo
 // Configuration from environment variables
 const channel = process.env.CHANNEL_ID;
 const userGroupId = process.env.USERGROUP_ID;
-const standupMarker = process.env.STANDUP_MARKER || '[STANDUP]';
+// Keywords to identify standup messages from Workflow Builder
+const standupKeywords = (process.env.STANDUP_KEYWORDS || 'standup,стендап,daily').toLowerCase().split(',');
 const reminderText = process.env.REMINDER_TEXT || 'Напоминание: не забыли отписаться в стендапе до 13:00?';
 
 /**
@@ -23,36 +24,48 @@ function isToday(timestampSeconds) {
 }
 
 /**
- * Find today's standup message in the channel
+ * Check if message is a standup message based on keywords
+ */
+function isStandupMessage(text) {
+  if (!text) return false;
+  const lowerText = text.toLowerCase();
+  return standupKeywords.some(keyword => lowerText.includes(keyword.trim()));
+}
+
+/**
+ * Find today's standup message posted by Workflow Builder
  */
 async function findTodayStandupMessage() {
   try {
     // Fetch recent messages from the channel
     const history = await botClient.conversations.history({
       channel: channel,
-      limit: 200 // Look through last 200 messages
+      limit: 100 // Look through last 100 messages
     });
     
-    // Find today's standup message
+    // Find today's standup message (posted by Workflow Builder)
     const standupMessage = (history.messages || []).find(message => {
-      // Check if message contains the standup marker
-      if (!message.text?.includes(standupMarker)) return false;
-      
       // Check if message is from today
       const timestampSeconds = Number((message.ts || '0').split('.')[0]);
       if (!isToday(timestampSeconds)) return false;
       
-      // Exclude thread replies and other subtypes
-      if (message.subtype) return false;
+      // Check if it's from Workflow Builder (has bot_id but no subtype, or subtype is 'bot_message')
+      const isFromWorkflow = message.bot_id && (!message.subtype || message.subtype === 'bot_message');
+      if (!isFromWorkflow) return false;
+      
+      // Check if message contains standup keywords
+      if (!isStandupMessage(message.text)) return false;
       
       return true;
     });
     
     if (standupMessage) {
-      console.log(`✅ Found today's standup message: ${standupMessage.ts}`);
+      console.log(`✅ Found today's standup message from Workflow: ${standupMessage.ts}`);
+      console.log(`   Message preview: ${standupMessage.text?.substring(0, 50)}...`);
       return standupMessage.ts;
     } else {
-      console.log('⚠️  No standup message found for today');
+      console.log('⚠️  No standup message from Workflow found for today');
+      console.log('   Looking for keywords:', standupKeywords.join(', '));
       return null;
     }
   } catch (error) {
@@ -170,11 +183,8 @@ async function sendReminders(threadTs, usersToRemind) {
 async function main() {
   try {
     console.log('🚀 Starting standup reminder process...');
-    console.log(`   Channel: ${channel}`);
-    console.log(`   User Group: ${userGroupId}`);
-    console.log(`   Marker: "${standupMarker}"`);
     
-    // 1. Find today's standup message
+    // 1. Find today's standup message from Workflow Builder
     const standupMessageTs = await findTodayStandupMessage();
     if (!standupMessageTs) {
       console.log('⚠️  No standup message found for today. Exiting.');
@@ -225,7 +235,7 @@ if (missingVars.length > 0) {
   missingVars.forEach(name => console.error(`   - ${name}`));
   console.error('\nOptional environment variables:');
   console.error('   - SLACK_USER_TOKEN (recommended for user group access)');
-  console.error('   - STANDUP_MARKER (default: "[STANDUP]")');
+  console.error('   - STANDUP_KEYWORDS (default: "standup,стендап,daily")');
   console.error('   - REMINDER_TEXT (default: "Напоминание: не забыли отписаться в стендапе до 13:00?")');
   process.exit(1);
 }
@@ -237,6 +247,12 @@ if (!process.env.SLACK_USER_TOKEN) {
   console.warn('   but this may fail depending on your workspace settings.');
   console.warn('   If you see errors, please provide a user token with usergroups:read scope.');
 }
+
+console.log('\n📋 Configuration:');
+console.log(`   Channel: ${channel}`);
+console.log(`   User Group: ${userGroupId}`);
+console.log(`   Keywords: ${standupKeywords.join(', ')}`);
+console.log(`   Looking for Workflow Builder posts with these keywords\n`);
 
 // Run the main function
 await main();
