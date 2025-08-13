@@ -1,0 +1,21 @@
+{
+  "name": "slack-standup-reminder",
+  "version": "1.0.0",
+  "description": "Slack bot for daily standup reminders with user group support",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "post-standup": "node scripts/post-standup.js",
+    "remind": "node scripts/remind.js",
+    "test-post": "node scripts/post-standup.js",
+    "test-remind": "node scripts/remind.js"
+  },
+  "dependencies": {
+    "@slack/web-api": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "",
+  "license": "MIT"
+}
