@@ -1,5 +1,5 @@
 import { WebClient } from '@slack/web-api';
-import TimetasticAPI from '../lib/timetastic.js';
+import TimetasticAPI from '../lib/timetastic-native.js';
 import UKHolidayChecker from '../lib/holidays.js';
 
 // Initialize Slack clients
@@ -190,14 +190,9 @@ async function filterWorkingUsers(userIds, emailMap, nameMap) {
     const email = emailMap[userId];
     const name = nameMap[userId] || userId;
     
-    if (!email) {
-      console.log(`   ⚠️  No email for ${name}, including in reminders`);
-      skippedUsers.noEmail.push(name);
-      workingUsers.push(userId);
-      continue;
-    }
-
-    const status = await timetastic.isUserWorking(email);
+    // Check if user is working today via Timetastic
+    // Pass both email and name - will use name as fallback if email is not available
+    const status = await timetastic.isUserWorking(email, name);
     
     if (status.working) {
       workingUsers.push(userId);
